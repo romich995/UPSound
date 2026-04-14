@@ -1,13 +1,11 @@
 import asyncio
 import logging
 import re
-from venv import logger
 
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram import Bot, Dispatcher
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from urllib3.util import timeout
 from yandex_music import ClientAsync
 from yandex_music.utils.request_async import Request
 
