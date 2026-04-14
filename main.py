@@ -3,6 +3,7 @@ import logging
 import re
 
 from aiogram.filters import CommandStart
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.types import Message
 from aiogram import Bot, Dispatcher
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -15,7 +16,8 @@ class Settings(BaseSettings):
         env_file=".env"
     )
     YANDEX_MUSIC_API_TOKEN: str
-    PROXY_URL: str
+    YANDEX_PROXY_URL: str | None = None
+    TELEGRAM_PROXY_URL: str | None = None
     BOT_TOKEN: str
 
 settings = Settings()
@@ -26,9 +28,12 @@ logging.basicConfig(
 )
 
 dp = Dispatcher()
+
+session = AiohttpSession(proxy=settings.TELEGRAM_PROXY_URL) if settings.TELEGRAM_PROXY_URL else None
 logger = logging.getLogger(__name__)
-request = Request(proxy_url=settings.PROXY_URL)
-yandex_client_async = ClientAsync(token=settings.YANDEX_MUSIC_API_TOKEN, request=request,)
+
+request = Request(proxy_url=settings.YANDEX_PROXY_URL) if settings.YANDEX_PROXY_URL else None
+yandex_client_async = ClientAsync(token=settings.YANDEX_MUSIC_API_TOKEN, request=request)
 
 @dp.message(CommandStart())
 async def start(message: Message):
@@ -72,7 +77,7 @@ async def get_music_info(message: Message):
                          )
 
 async def main():
-    bot = Bot(token= settings.BOT_TOKEN)
+    bot = Bot(token= settings.BOT_TOKEN, session=session)
     await  dp.start_polling(bot)
 
 if __name__ == '__main__':
